@@ -27,7 +27,6 @@ function renderStatsHistory(userId) {
         .then(({ stats_history: history }) => {
             const driverRatingHistory = collectStats(history, "stats12");
             const sporstmanshipRatingHistory = collectStats(history, "stats13");
-            console.log({ driverRatingHistory, sporstmanshipRatingHistory });
 
             renderChart("gts-pex-dr", driverRatingHistory, "blue");
             renderChart("gts-pex-sr", sporstmanshipRatingHistory, "green");
@@ -57,7 +56,12 @@ function renderChart(elementId, series, color) {
         },
         options: {
             scales: {
-                xAxes: [{ type: 'linear' }]
+                xAxes: [{ type: 'linear' }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
             },
             legend: {
                 display: false

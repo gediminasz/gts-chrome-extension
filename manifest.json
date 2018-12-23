@@ -3,10 +3,16 @@
     "description": "GT Sport Profile Extension",
     "version": "0.1.0",
     "manifest_version": 2,
+    "background": {
+        "persistent": false,
+        "scripts": [
+            "background.js"
+        ]
+    },
     "content_scripts": [
         {
             "matches": [
-                "https://www.gran-turismo.com/us/gtsport/user/profile/*/overview"
+                "https://www.gran-turismo.com/us/gtsport/user/*"
             ],
             "js": [
                 "lib/Chart.min.js",
@@ -14,5 +20,8 @@
                 "main.js"
             ]
         }
+    ],
+    "permissions": [
+        "webNavigation"
     ]
 }

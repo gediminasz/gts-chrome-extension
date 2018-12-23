@@ -2,18 +2,29 @@ const CONTAINER_ID = "js-pex-container";
 const CHART_COLOR = "#1b2c3d";
 
 function inject() {
+    if (!getContainerElement()) {
+        const appMountRoot = document.getElementById("app_mount_root");
+        appMountRoot.insertAdjacentHTML("afterend", `<div id="${CONTAINER_ID}">Loading...</div>`);
+    }
+
     const userId = getUserId();
-    const appMountRoot = document.getElementById("app_mount_root");
+    if (!userId) {
+        m.render(getContainerElement(), "");
+    } else {
 
-    appMountRoot.insertAdjacentHTML("afterend", `<div id="${CONTAINER_ID}">Loading...</div>`);
+        fetchStatsHistory(userId).then(
+            history => m.render(getContainerElement(), m(Container(history)))
+        );
+    }
+}
 
-    fetchStatsHistory(userId).then(
-        history => m.mount(document.getElementById(CONTAINER_ID), Container(history))
-    );
+function getContainerElement() {
+    return document.getElementById(CONTAINER_ID);
 }
 
 function getUserId(pattern = /us\/gtsport\/user\/profile\/(\d+)\/overview/) {
-    return pattern.exec(location.href)[1];
+    const match = pattern.exec(location.href);
+    return match ? match[1] : undefined;
 }
 
 function fetchStatsHistory(userId) {
@@ -94,3 +105,7 @@ function renderChart(element, series) {
 }
 
 window.onload = inject;
+
+chrome.runtime.onMessage.addListener(
+    (request) => (request === "onHistoryStateUpdated") && inject()
+);

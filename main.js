@@ -4,14 +4,13 @@ const CHART_COLOR = "#1b2c3d";
 function inject() {
     if (!getContainerElement()) {
         const appMountRoot = document.getElementById("app_mount_root");
-        appMountRoot.insertAdjacentHTML("afterend", `<div id="${CONTAINER_ID}">Loading...</div>`);
+        appMountRoot.insertAdjacentHTML("afterend", `<div id="${CONTAINER_ID}" />`);
     }
 
     const userId = getUserId();
     if (!userId) {
         m.render(getContainerElement(), "");
     } else {
-
         fetchStatsHistory(userId).then(
             history => m.render(getContainerElement(), m(Container(history)))
         );
@@ -24,7 +23,7 @@ function getContainerElement() {
 
 function getUserId(pattern = /us\/gtsport\/user\/profile\/(\d+)\/overview/) {
     const match = pattern.exec(location.href);
-    return match ? match[1] : undefined;
+    return match && match[1];
 }
 
 function fetchStatsHistory(userId) {
@@ -48,12 +47,12 @@ function collectStats(stats, key) {
 
 function Container(history) {
     const driverRatingHistory = collectStats(history, "stats12");
-    const sporstmanshipRatingHistory = collectStats(history, "stats13");
+    const sportsmanshipRatingHistory = collectStats(history, "stats13");
 
     return {
         view: () => [
             m(RatingChart("Driver Rating", driverRatingHistory)),
-            m(RatingChart("Sportsmanship Rating", sporstmanshipRatingHistory))
+            m(RatingChart("Sportsmanship Rating", sportsmanshipRatingHistory))
         ]
     }
 }
@@ -91,15 +90,9 @@ function renderChart(element, series) {
         options: {
             scales: {
                 xAxes: [{ type: "linear" }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }]
+                yAxes: [{ ticks: { beginAtZero: true } }]
             },
-            legend: {
-                display: false
-            }
+            legend: { display: false }
         }
     });
 }

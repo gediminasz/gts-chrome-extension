@@ -2,8 +2,6 @@ function inject() {
     const userId = getUserId();
     const appMountRoot = document.getElementById("app_mount_root");
 
-    console.log({ userId: getUserId() });
-
     appMountRoot.insertAdjacentHTML("afterend", '<div style="width: 800px; margin: auto"><canvas id="gts-pex-sr" width="800" height="400" /></div>');
     appMountRoot.insertAdjacentHTML("afterend", '<div style="width: 800px; margin: auto"><canvas id="gts-pex-dr" width="800" height="400" /></div>');
 
@@ -28,8 +26,8 @@ function renderStatsHistory(userId) {
             const driverRatingHistory = collectStats(history, "stats12");
             const sporstmanshipRatingHistory = collectStats(history, "stats13");
 
-            renderChart("gts-pex-dr", driverRatingHistory, "blue");
-            renderChart("gts-pex-sr", sporstmanshipRatingHistory, "green");
+            renderChart("gts-pex-dr", driverRatingHistory, "#1b2c3d");
+            renderChart("gts-pex-sr", sporstmanshipRatingHistory, "#1b2c3d");
         });
 }
 

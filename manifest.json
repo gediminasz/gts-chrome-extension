@@ -1,7 +1,7 @@
 {
     "name": "GT Sport Profile Extension",
     "description": "GT Sport Profile Extension",
-    "version": "0.1",
+    "version": "0.1.0",
     "manifest_version": 2,
     "content_scripts": [
         {
@@ -10,6 +10,7 @@
             ],
             "js": [
                 "lib/Chart.min.js",
+                "lib/mithril.min.js",
                 "main.js"
             ]
         }

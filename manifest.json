@@ -12,7 +12,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://www.gran-turismo.com/us/gtsport/user/*"
+                "https://www.gran-turismo.com/*"
             ],
             "js": [
                 "lib/Chart.min.js",

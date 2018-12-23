@@ -61,7 +61,7 @@ function Container(history) {
 function RatingChart(title, series) {
     return {
         view: () => (
-            m("div", { style: { textAlign: "center" } }, [
+            m("div", { style: { textAlign: "center", marginBottom: "20px" } }, [
                 m("h1", title),
                 m(
                     "div",

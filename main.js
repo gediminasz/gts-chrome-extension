@@ -1,4 +1,4 @@
-const CONTAINER_ID = "js-pex-container";
+const CONTAINER_ID = "js-charts-container";
 const CHART_COLOR = "#1b2c3d";
 
 function inject() {

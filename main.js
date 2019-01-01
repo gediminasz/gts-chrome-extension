@@ -2,26 +2,28 @@ const CONTAINER_ID = "js-pex-container";
 const CHART_COLOR = "#1b2c3d";
 
 function inject() {
-    if (!getContainerElement()) {
-        const appMountRoot = document.getElementById("app_mount_root");
-        appMountRoot.insertAdjacentHTML("afterend", `<div id="${CONTAINER_ID}" />`);
-    }
-
+    const container = getContainer();
     const userId = getUserId();
+
     if (!userId) {
-        m.render(getContainerElement(), "");
+        m.render(container, "");
     } else {
         fetchStatsHistory(userId).then(
-            history => m.render(getContainerElement(), m(Container(history)))
+            history => m.render(container, m(Container(history)))
         );
     }
 }
 
-function getContainerElement() {
+function getContainer() {
+    const element = document.getElementById(CONTAINER_ID);
+    if (element) return element
+
+    const appMountRoot = document.getElementById("app_mount_root");
+    appMountRoot.insertAdjacentHTML("afterend", `<div id="${CONTAINER_ID}" />`);
     return document.getElementById(CONTAINER_ID);
 }
 
-function getUserId(pattern = /us\/gtsport\/user\/profile\/(\d+)\/overview/) {
+function getUserId(pattern = /gtsport\/user\/profile\/(\d+)\/overview/) {
     const match = pattern.exec(location.href);
     return match && match[1];
 }

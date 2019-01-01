@@ -60,10 +60,11 @@ function Container(history) {
 }
 
 function RatingChart(title, series) {
+    const currentValue = series[series.length - 1];
     return {
         view: () => (
             m("div", { style: { textAlign: "center", marginBottom: "20px", fontFamily: "sans-serif" } }, [
-                m("h1", title),
+                m("h1", `${title} (${currentValue})`),
                 m(
                     "div",
                     { style: { width: "800px", height: "400px", margin: "auto" } },

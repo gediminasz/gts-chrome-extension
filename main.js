@@ -8,8 +8,11 @@ function inject() {
     if (!userId) {
         m.render(container, "");
     } else {
-        fetchStatsHistory(userId).then(
-            history => m.render(container, m(Container(history)))
+        Promise.all([
+            fetchStats(userId),
+            fetchStatsHistory(userId)
+        ]).then(
+            ([stats, history]) => m.render(container, m(Container(stats, history)))
         );
     }
 }
@@ -28,12 +31,21 @@ function getUserId(pattern = /gtsport\/user\/profile\/(\d+)\/overview/) {
     return match && match[1];
 }
 
+function fetchStats(userId) {
+    const body = new FormData;
+    body.append("job", 3);
+    body.append("user_no", userId);
+    return fetch("https://www.gran-turismo.com/us/api/gt7sp/profile/", { method: "POST", body })
+        .then(response => response.json())
+        .then(({ stats }) => stats);
+}
+
 function fetchStatsHistory(userId) {
     const body = new FormData;
     body.append("job", 12);
+    body.append("user_no", userId);
     body.append("month_begin", 10);
     body.append("month_end", 12);
-    body.append("user_no", userId);
     body.append("year_begin", 2017);
     body.append("year_end", 2050);
     return fetch("https://www.gran-turismo.com/us/api/gt7sp/profile/", { method: "POST", body })
@@ -47,7 +59,9 @@ function collectStats(stats, key) {
         .map(value => parseInt(value));
 }
 
-function Container(history) {
+function Container(stats, history) {
+    console.log(stats);
+
     const driverRatingHistory = collectStats(history, "stats12");
     const sportsmanshipRatingHistory = collectStats(history, "stats13");
 
@@ -58,6 +72,7 @@ function Container(history) {
                 m("div", [
                     m(Stat("CURRENT", currentValue(driverRatingHistory))),
                     m(Stat("MAX", maxValue(driverRatingHistory))),
+                    m(Stat("UPRATE", stats.driver_point_up_rate)),
                 ]),
                 m(RatingChart(driverRatingHistory))
             ])),

@@ -95,7 +95,8 @@ function renderChart(element, series) {
                 xAxes: [{ type: "linear" }],
                 yAxes: [{ ticks: { beginAtZero: true } }]
             },
-            legend: { display: false }
+            legend: { display: false },
+            tooltips: { mode: 'index', intersect: false }
         }
     });
 }

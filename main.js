@@ -52,32 +52,45 @@ function Container(history) {
     const sportsmanshipRatingHistory = collectStats(history, "stats13");
 
     return {
-        view: () => [
-            m(RatingChart("Driver Rating", driverRatingHistory)),
-            m(RatingChart("Sportsmanship Rating", sportsmanshipRatingHistory))
-        ]
+        view: () => m("div", { style: { textAlign: "center", fontFamily: "sans-serif" } }, [
+            m(Section([
+                m(Title("Driver Rating")),
+                m("div", [
+                    m(Stat("CURRENT", currentValue(driverRatingHistory))),
+                    m(Stat("MAX", maxValue(driverRatingHistory))),
+                ]),
+                m(RatingChart(driverRatingHistory))
+            ])),
+            m(Section([
+                m(Title("Sportsmanship Rating")),
+                m("div", [
+                    m(Stat("CURRENT", currentValue(sportsmanshipRatingHistory))),
+                    m(Stat("MAX", maxValue(sportsmanshipRatingHistory))),
+                ]),
+                m(RatingChart(sportsmanshipRatingHistory))
+            ]))
+        ])
     }
 }
 
-function RatingChart(title, series) {
-    const currentValue = series[series.length - 1];
-    const maxValue = Math.max(...series);
+function Section(children) {
     return {
-        view: () => (
-            m("div", { style: { textAlign: "center", marginBottom: "20px", fontFamily: "sans-serif" } }, [
-                m("h1", { style: { margin: 0 } }, `${title}`),
-                m("div", [
-                    m(Stat("CURRENT", currentValue)),
-                    m(Stat("MAX", maxValue)),
-                ]),
-                m(
-                    "div",
-                    { style: { width: "800px", height: "400px", margin: "auto" } },
-                    m("canvas", { width: 800, height: 400, oncreate: (vnode) => renderChart(vnode.dom, series) })
-                )
-            ])
-        )
+        view: () => m("div", { style: { marginBottom: "20px" } }, children)
     }
+}
+
+function Title(text) {
+    return {
+        view: () => m("h1", { style: { margin: 0 } }, text)
+    }
+}
+
+function maxValue(series) {
+    return Math.max(...series);
+}
+
+function currentValue(series) {
+    return series[series.length - 1];
 }
 
 function Stat(label, value) {
@@ -86,6 +99,16 @@ function Stat(label, value) {
             "div",
             { style: { display: "inline", padding: "0 10px", fontSize: "1.2rem" } },
             [`${label}: `, m("strong", value)]
+        )
+    }
+}
+
+function RatingChart(series) {
+    return {
+        view: () => m(
+            "div",
+            { style: { width: "800px", height: "400px", margin: "auto" } },
+            m("canvas", { width: 800, height: 400, oncreate: (vnode) => renderChart(vnode.dom, series) })
         )
     }
 }

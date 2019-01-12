@@ -61,16 +61,31 @@ function Container(history) {
 
 function RatingChart(title, series) {
     const currentValue = series[series.length - 1];
+    const maxValue = Math.max(...series);
     return {
         view: () => (
             m("div", { style: { textAlign: "center", marginBottom: "20px", fontFamily: "sans-serif" } }, [
-                m("h1", `${title} (${currentValue})`),
+                m("h1", { style: { margin: 0 } }, `${title}`),
+                m("div", [
+                    m(Stat("CURRENT", currentValue)),
+                    m(Stat("MAX", maxValue)),
+                ]),
                 m(
                     "div",
                     { style: { width: "800px", height: "400px", margin: "auto" } },
                     m("canvas", { width: 800, height: 400, oncreate: (vnode) => renderChart(vnode.dom, series) })
                 )
             ])
+        )
+    }
+}
+
+function Stat(label, value) {
+    return {
+        view: () => m(
+            "div",
+            { style: { display: "inline", padding: "0 10px", fontSize: "1.2rem" } },
+            [`${label}: `, m("strong", value)]
         )
     }
 }

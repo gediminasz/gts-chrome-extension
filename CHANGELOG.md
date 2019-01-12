@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 * Added tooltips to show rating values within the charts.
 * Added historic max rating value.

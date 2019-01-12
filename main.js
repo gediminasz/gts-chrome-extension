@@ -60,14 +60,12 @@ function collectStats(stats, key) {
 }
 
 function Container(stats, history) {
-    console.log(stats);
-
     const driverRatingHistory = collectStats(history, "stats12");
     const sportsmanshipRatingHistory = collectStats(history, "stats13");
 
     return {
         view: () => m("div", { style: { textAlign: "center", fontFamily: "sans-serif" } }, [
-            m(Section([
+            (driverRatingHistory.length > 1) && m(Section([
                 m(Title("Driver Rating")),
                 m("div", [
                     m(Stat("CURRENT", currentValue(driverRatingHistory))),
@@ -76,7 +74,7 @@ function Container(stats, history) {
                 ]),
                 m(RatingChart(driverRatingHistory))
             ])),
-            m(Section([
+            (sportsmanshipRatingHistory.length > 1) && m(Section([
                 m(Title("Sportsmanship Rating")),
                 m("div", [
                     m(Stat("CURRENT", currentValue(sportsmanshipRatingHistory))),

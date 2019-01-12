@@ -96,7 +96,14 @@ function renderChart(element, series) {
                 yAxes: [{ ticks: { beginAtZero: true } }]
             },
             legend: { display: false },
-            tooltips: { mode: 'index', intersect: false }
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+                displayColors: false,
+                callbacks: {
+                    title: () => ""
+                }
+            }
         }
     });
 }

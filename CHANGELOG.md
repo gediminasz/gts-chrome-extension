@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+* Fixed most recent data not being displayed by adding 24 month limit.
+
 ## 0.2.0
 
 * Added tooltips to show rating values within the charts.

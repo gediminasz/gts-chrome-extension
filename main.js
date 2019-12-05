@@ -64,6 +64,16 @@ function collectStats(stats, key) {
         .map(value => parseInt(value));
 }
 
+function collectDailyStats(stats, key) {
+    return stats.flatMap(monthlyStats =>
+        monthlyStats[key].map((value, day) =>
+            ({
+                x: new Date(parseInt(monthlyStats.year), parseInt(monthlyStats.month) - 1, day),
+                y: parseInt(value)
+            })
+        ).filter(({ y }) => y !== 0));
+}
+
 function Container(stats, history) {
     const driverRatingHistory = collectStats(history, "stats12");
     const sportsmanshipRatingHistory = collectStats(history, "stats13");
@@ -78,6 +88,10 @@ function Container(stats, history) {
                     m(Stat("UPRATE", stats.driver_point_up_rate)),
                 ]),
                 m(RatingChart(driverRatingHistory))
+            ])),
+            (driverRatingHistory.length > 1) && m(Section([
+                m(Title("Driver Rating (DAILY)")),
+                m(TimeSeriesChart(collectDailyStats(history, "stats12")))
             ])),
             (sportsmanshipRatingHistory.length > 1) && m(Section([
                 m(Title("Sportsmanship Rating")),
@@ -125,8 +139,8 @@ function RatingChart(series) {
     return {
         view: () => m(
             "div",
-            { style: { width: "800px", height: "400px", margin: "auto" } },
-            m("canvas", { width: 800, height: 400, oncreate: (vnode) => renderChart(vnode.dom, series) })
+            { style: { width: "1000px", height: "400px", margin: "auto" } },
+            m("canvas", { width: 1000, height: 400, oncreate: (vnode) => renderChart(vnode.dom, series) })
         )
     }
 }
@@ -164,6 +178,52 @@ function renderChart(element, series) {
     });
 }
 
+function TimeSeriesChart(timeSeries) {
+    return {
+        view: () => m(
+            "div",
+            { style: { width: "1000px", height: "500px", margin: "auto" } },
+            m("canvas", { width: 1000, height: 500, oncreate: (vnode) => renderTimeSeriesChart(vnode.dom, timeSeries) })
+        )
+    }
+}
+
+function renderTimeSeriesChart(element, timeSeries) {
+    return new Chart(element, {
+        type: "line",
+        data: {
+            datasets: [
+                {
+                    data: timeSeries,
+                    steppedLine: "before",
+                    fill: false,
+                    pointRadius: 0,
+                    borderWidth: 2,
+                    borderColor: CHART_COLOR,
+                    backgroundColor: CHART_COLOR
+                }
+            ]
+        },
+        options: {
+            scales: {
+                xAxes: [{ type: "time", time: { unit: "month" } }],
+                yAxes: [{ ticks: { beginAtZero: true } }]
+            },
+            legend: { display: false },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+                displayColors: false,
+                callbacks: {
+                    title: ([item, ...rest], data) => {
+                        const dataPoint = data.datasets[item.datasetIndex].data[item.index];
+                        return dataPoint.x.toLocaleDateString(undefined, { dateStyle: "medium" })
+                    }
+                }
+            }
+        }
+    });
+}
 window.onload = inject;
 
 chrome.runtime.onMessage.addListener(

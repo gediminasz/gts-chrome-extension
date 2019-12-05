@@ -20,6 +20,7 @@
                 "https://www.gran-turismo.com/*"
             ],
             "js": [
+                "lib/moment.min.js",
                 "lib/Chart.min.js",
                 "lib/mithril.min.js",
                 "main.js"

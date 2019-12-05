@@ -7,6 +7,7 @@ PATHS = (
     "assets/icons/icon128.png",
     "lib/Chart.min.js",
     "lib/mithril.min.js",
+    "lib/moment.min.js",
     "background.js",
     "main.js",
     "manifest.json",

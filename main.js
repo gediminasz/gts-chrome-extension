@@ -4,6 +4,9 @@ const CHART_COLOR = "#1b2c3d";
 const DR = "stats12";
 const SR = "stats13";
 
+const CHART_TYPE_TIME = "CHART_TYPE_TIME";
+const CHART_TYPE_LINEAR = "CHART_TYPE_LINEAR";
+
 function inject() {
     const container = getContainer();
     const userId = getUserId();
@@ -59,53 +62,37 @@ function fetchStatsHistory(userId) {
         .then(({ stats_history }) => stats_history);
 }
 
-function Container() {
-    let showDriverRatingOverTime = true;
-    let showSportsmanshipRatingOverTime = true;
+const Container = {
+    view: (vnode) => {
+        const { history } = vnode.attrs;
 
-    const toggleDR = () => { showDriverRatingOverTime = !showDriverRatingOverTime };
-    const toggleSR = () => { showSportsmanshipRatingOverTime = !showSportsmanshipRatingOverTime };
+        return m("div", { style: { textAlign: "center", fontFamily: "sans-serif" } }, [
+            m(Section, { title: "Driver Rating", series: collectStats(history, DR) }),
+            m(Section, { title: "Sportsmanship Rating", series: collectStats(history, SR) }),
+        ])
+    },
+};
+
+function Section() {
+    let chartType = CHART_TYPE_TIME;
+    const setChartType = (type) => () => { chartType = type };
 
     return {
         view: (vnode) => {
-            const { stats, history } = vnode.attrs;
+            const { title, series } = vnode.attrs;
+            if (series.length <= 1) return;
 
-            const driverRatingHistory = collectStats(history, DR);
-            const sportsmanshipRatingHistory = collectStats(history, SR);
-
-            return m("div", { style: { textAlign: "center", fontFamily: "sans-serif" } }, [
-                (driverRatingHistory.length > 1) && m(Section([
-                    m(Title("Driver Rating")),
-                    m("div", [
-                        m(Stat("CURRENT", currentValue(driverRatingHistory))),
-                        m(Stat("MAX", maxValue(driverRatingHistory))),
-                        m(Stat("UPRATE", stats.driver_point_up_rate)),
-                        m("button", { onclick: toggleDR }, "Toggle"),
-                    ]),
-                    showDriverRatingOverTime
-                        ? m(TimeChart(driverRatingHistory))
-                        : m(LinearChart(driverRatingHistory))
-                ])),
-                (sportsmanshipRatingHistory.length > 1) && m(Section([
-                    m(Title("Sportsmanship Rating")),
-                    m("div", [
-                        m(Stat("CURRENT", currentValue(sportsmanshipRatingHistory))),
-                        m(Stat("MAX", maxValue(sportsmanshipRatingHistory))),
-                        m("button", { onclick: toggleSR }, "Toggle"),
-                    ]),
-                    showSportsmanshipRatingOverTime
-                        ? m(TimeChart(sportsmanshipRatingHistory, SR))
-                        : m(LinearChart(sportsmanshipRatingHistory, SR))
-                ]))
-            ])
+            return m("div", { style: { marginBottom: "20px" } }, [
+                m(Title(title)),
+                m("div", [
+                    m(Stat("CURRENT", currentValue(series))),
+                    m(Stat("MAX", maxValue(series))),
+                    m("button", { onclick: setChartType(CHART_TYPE_TIME) }, "Time"),
+                    m("button", { onclick: setChartType(CHART_TYPE_LINEAR) }, "Linear"),
+                ]),
+                chartType === CHART_TYPE_TIME ? m(TimeChart(series)) : m(LinearChart(series))
+            ]);
         }
-    }
-}
-
-
-function Section(children) {
-    return {
-        view: () => m("div", { style: { marginBottom: "20px" } }, children)
     }
 }
 

@@ -82,13 +82,35 @@ function Section() {
             const { title, series } = vnode.attrs;
             if (series.length <= 1) return;
 
+            const pillStyle = {
+                display: "inline-block",
+                width: "140px",
+                height: "32px",
+                lineHeight: "32px",
+                border: "1px solid",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: 700,
+            };
+            const leftPillStyle = {
+                ...pillStyle,
+                borderRight: 0,
+                borderRadius: "16px 0 0 16px",
+            };
+            const rightPillStyle = {
+                ...pillStyle,
+                borderRadius: "0 16px 16px 0",
+            };
+
             return m("div", { style: { marginBottom: "20px" } }, [
                 m(Title(title)),
                 m("div", [
                     m(Stat("CURRENT", currentValue(series))),
                     m(Stat("MAX", maxValue(series))),
-                    m("button", { onclick: setChartType(CHART_TYPE_TIME) }, "Time"),
-                    m("button", { onclick: setChartType(CHART_TYPE_LINEAR) }, "Linear"),
+                    m("div", [
+                        m("div", { style: leftPillStyle, onclick: setChartType(CHART_TYPE_TIME) }, "Time"),
+                        m("div", { style: rightPillStyle, onclick: setChartType(CHART_TYPE_LINEAR) }, "Linear"),
+                    ]),
                 ]),
                 chartType === CHART_TYPE_TIME ? m(TimeChart(series)) : m(LinearChart(series))
             ]);

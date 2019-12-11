@@ -1,5 +1,7 @@
 const CONTAINER_ID = "js-charts-container";
 const CHART_COLOR = "#1b2c3d";
+const DARK_GREY = "#1c1c1c";
+const LIGHT_GREY = "#f2f2f2";
 
 const DR = "stats12";
 const SR = "stats13";
@@ -12,6 +14,8 @@ function inject() {
     const userId = getUserId();
 
     if (!userId) return;
+
+    // TODO GZL fix charts visible in non profile pages like https://www.gran-turismo.com/gb/gtsport/user/relations
 
     Promise.all([
         fetchStats(userId),
@@ -66,7 +70,7 @@ const Container = {
     view: (vnode) => {
         const { history } = vnode.attrs;
 
-        return m("div", { style: { textAlign: "center", fontFamily: "sans-serif" } }, [
+        return m("div", { style: { textAlign: "center", fontFamily: "sans-serif", color: DARK_GREY } }, [
             m(Section, { title: "Driver Rating", series: collectStats(history, DR) }),
             m(Section, { title: "Sportsmanship Rating", series: collectStats(history, SR) }),
         ])
@@ -87,19 +91,25 @@ function Section() {
                 width: "140px",
                 height: "32px",
                 lineHeight: "32px",
-                border: "1px solid",
+                border: `1px solid ${DARK_GREY}`,
                 cursor: "pointer",
                 fontSize: "13px",
                 fontWeight: 700,
             };
+            const active = {
+                color: LIGHT_GREY,
+                backgroundColor: DARK_GREY,
+            }
             const leftPillStyle = {
                 ...pillStyle,
                 borderRight: 0,
                 borderRadius: "16px 0 0 16px",
+                ...(chartType === CHART_TYPE_TIME ? active : {}),
             };
             const rightPillStyle = {
                 ...pillStyle,
                 borderRadius: "0 16px 16px 0",
+                ...(chartType === CHART_TYPE_LINEAR ? active : {}),
             };
 
             return m("div", { style: { marginBottom: "20px" } }, [
@@ -107,7 +117,7 @@ function Section() {
                 m("div", [
                     m(Stat("CURRENT", currentValue(series))),
                     m(Stat("MAX", maxValue(series))),
-                    m("div", [
+                    m("div", { style: { margin: "25px 0" } }, [
                         m("div", { style: leftPillStyle, onclick: setChartType(CHART_TYPE_TIME) }, "Time"),
                         m("div", { style: rightPillStyle, onclick: setChartType(CHART_TYPE_LINEAR) }, "Linear"),
                     ]),

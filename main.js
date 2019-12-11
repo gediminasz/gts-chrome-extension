@@ -1,20 +1,28 @@
 const CONTAINER_ID = "js-charts-container";
 const CHART_COLOR = "#1b2c3d";
+const DARK_GREY = "#1c1c1c";
+const LIGHT_GREY = "#f2f2f2";
+
+const DR = "stats12";
+const SR = "stats13";
+
+const CHART_TYPE_TIME = "CHART_TYPE_TIME";
+const CHART_TYPE_LINEAR = "CHART_TYPE_LINEAR";
 
 function inject() {
     const container = getContainer();
     const userId = getUserId();
 
-    if (!userId) {
-        m.render(container, "");
-    } else {
-        Promise.all([
-            fetchStats(userId),
-            fetchStatsHistory(userId)
-        ]).then(
-            ([stats, history]) => m.render(container, m(Container(stats, history)))
-        );
-    }
+    if (!userId) return;
+
+    // TODO GZL fix charts visible in non profile pages like https://www.gran-turismo.com/gb/gtsport/user/relations
+
+    Promise.all([
+        fetchStats(userId),
+        fetchStatsHistory(userId)
+    ]).then(
+        ([stats, history]) => m.mount(container, { view: () => m(Container, { stats, history }) })
+    );
 }
 
 function getContainer() {
@@ -58,42 +66,65 @@ function fetchStatsHistory(userId) {
         .then(({ stats_history }) => stats_history);
 }
 
-function collectStats(stats, key) {
-    return stats.flatMap(monthlyStats => monthlyStats[key] || [])
-        .filter(value => value != 0)
-        .map(value => parseInt(value));
-}
+const Container = {
+    view: (vnode) => {
+        const { history } = vnode.attrs;
 
-function Container(stats, history) {
-    const driverRatingHistory = collectStats(history, "stats12");
-    const sportsmanshipRatingHistory = collectStats(history, "stats13");
-
-    return {
-        view: () => m("div", { style: { textAlign: "center", fontFamily: "sans-serif" } }, [
-            (driverRatingHistory.length > 1) && m(Section([
-                m(Title("Driver Rating")),
-                m("div", [
-                    m(Stat("CURRENT", currentValue(driverRatingHistory))),
-                    m(Stat("MAX", maxValue(driverRatingHistory))),
-                    m(Stat("UPRATE", stats.driver_point_up_rate)),
-                ]),
-                m(RatingChart(driverRatingHistory))
-            ])),
-            (sportsmanshipRatingHistory.length > 1) && m(Section([
-                m(Title("Sportsmanship Rating")),
-                m("div", [
-                    m(Stat("CURRENT", currentValue(sportsmanshipRatingHistory))),
-                    m(Stat("MAX", maxValue(sportsmanshipRatingHistory))),
-                ]),
-                m(RatingChart(sportsmanshipRatingHistory))
-            ]))
+        return m("div", { style: { textAlign: "center", fontFamily: "sans-serif", color: DARK_GREY } }, [
+            m(Section, { title: "Driver Rating", series: collectStats(history, DR) }),
+            m(Section, { title: "Sportsmanship Rating", series: collectStats(history, SR) }),
         ])
-    }
-}
+    },
+};
 
-function Section(children) {
+function Section() {
+    let chartType = CHART_TYPE_TIME;
+    const setChartType = (type) => () => { chartType = type };
+
     return {
-        view: () => m("div", { style: { marginBottom: "20px" } }, children)
+        view: (vnode) => {
+            const { title, series } = vnode.attrs;
+            if (series.length <= 1) return;
+
+            const pillStyle = {
+                display: "inline-block",
+                width: "140px",
+                height: "32px",
+                lineHeight: "32px",
+                border: `1px solid ${DARK_GREY}`,
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: 700,
+            };
+            const active = {
+                color: LIGHT_GREY,
+                backgroundColor: DARK_GREY,
+            }
+            const leftPillStyle = {
+                ...pillStyle,
+                borderRight: 0,
+                borderRadius: "16px 0 0 16px",
+                ...(chartType === CHART_TYPE_TIME ? active : {}),
+            };
+            const rightPillStyle = {
+                ...pillStyle,
+                borderRadius: "0 16px 16px 0",
+                ...(chartType === CHART_TYPE_LINEAR ? active : {}),
+            };
+
+            return m("div", { style: { marginBottom: "20px" } }, [
+                m(Title(title)),
+                m("div", [
+                    m(Stat("CURRENT", currentValue(series))),
+                    m(Stat("MAX", maxValue(series))),
+                    m("div", { style: { margin: "25px 0" } }, [
+                        m("div", { style: leftPillStyle, onclick: setChartType(CHART_TYPE_TIME) }, "Time"),
+                        m("div", { style: rightPillStyle, onclick: setChartType(CHART_TYPE_LINEAR) }, "Linear"),
+                    ]),
+                ]),
+                chartType === CHART_TYPE_TIME ? m(TimeChart(series)) : m(LinearChart(series))
+            ]);
+        }
     }
 }
 
@@ -103,12 +134,22 @@ function Title(text) {
     }
 }
 
+function collectStats(stats, key) {
+    return stats.flatMap(monthlyStats =>
+        monthlyStats[key].map((value, day) =>
+            ({
+                x: new Date(parseInt(monthlyStats.year), parseInt(monthlyStats.month) - 1, day),
+                y: parseInt(value)
+            })
+        ).filter(({ y }) => y !== 0));
+}
+
 function maxValue(series) {
-    return Math.max(...series);
+    return Math.max(...series.map(({ y }) => y));
 }
 
 function currentValue(series) {
-    return series[series.length - 1];
+    return series[series.length - 1].y;
 }
 
 function Stat(label, value) {
@@ -121,47 +162,91 @@ function Stat(label, value) {
     }
 }
 
-function RatingChart(series) {
+function LinearChart(timeSeries) {
+    const series = timeSeries.map(({ y }, x) => ({ x, y }));
+
+    return RatingChart(element =>
+        new Chart(element, {
+            type: "line",
+            data: {
+                datasets: [
+                    {
+                        data: series,
+                        steppedLine: "before",
+                        fill: false,
+                        pointRadius: 0,
+                        borderColor: CHART_COLOR,
+                        backgroundColor: CHART_COLOR
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    xAxes: [{ type: "linear" }],
+                    yAxes: [{ ticks: { beginAtZero: true } }]
+                },
+                legend: { display: false },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                    displayColors: false,
+                    callbacks: {
+                        title: () => ""
+                    }
+                },
+                animation: { duration: 0 },
+            }
+        })
+    );
+}
+
+function TimeChart(series) {
+    return RatingChart(element =>
+        new Chart(element, {
+            type: "line",
+            data: {
+                datasets: [
+                    {
+                        data: series,
+                        steppedLine: "before",
+                        fill: false,
+                        pointRadius: 0,
+                        borderColor: CHART_COLOR,
+                        backgroundColor: CHART_COLOR
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    xAxes: [{ type: "time", time: { unit: "month" } }],
+                    yAxes: [{ ticks: { beginAtZero: true } }]
+                },
+                legend: { display: false },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                    displayColors: false,
+                    callbacks: {
+                        title: ([item, ...rest], data) => {
+                            const dataPoint = data.datasets[item.datasetIndex].data[item.index];
+                            return dataPoint.x.toLocaleDateString(undefined, { dateStyle: "medium" })
+                        }
+                    }
+                },
+                animation: { duration: 0 },
+            }
+        })
+    );
+}
+
+function RatingChart(chartFactory) {
     return {
         view: () => m(
             "div",
-            { style: { width: "800px", height: "400px", margin: "auto" } },
-            m("canvas", { width: 800, height: 400, oncreate: (vnode) => renderChart(vnode.dom, series) })
+            { style: { width: "1000px", height: "400px", margin: "auto" } },
+            m("canvas", { width: 1000, height: 400, oncreate: (vnode) => chartFactory(vnode.dom) })
         )
     }
-}
-
-function renderChart(element, series) {
-    return new Chart(element, {
-        type: "line",
-        data: {
-            datasets: [
-                {
-                    data: series.map((y, x) => ({ x, y })),
-                    steppedLine: "after",
-                    fill: false,
-                    pointRadius: 0,
-                    borderColor: CHART_COLOR,
-                    backgroundColor: CHART_COLOR
-                }
-            ]
-        },
-        options: {
-            scales: {
-                xAxes: [{ type: "linear" }],
-                yAxes: [{ ticks: { beginAtZero: true } }]
-            },
-            legend: { display: false },
-            tooltips: {
-                mode: 'index',
-                intersect: false,
-                displayColors: false,
-                callbacks: {
-                    title: () => ""
-                }
-            }
-        }
-    });
 }
 
 window.onload = inject;

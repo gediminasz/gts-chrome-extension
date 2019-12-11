@@ -1,4 +1,5 @@
 import json
+import os
 import zipfile
 
 PATHS = (
@@ -16,6 +17,8 @@ PATHS = (
 with open("manifest.json", "r") as manifest:
     version = json.load(manifest)["version"]
 
-with zipfile.ZipFile(f"DR-SR-Charts-{version}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+os.makedirs("dist", exist_ok=True)
+
+with zipfile.ZipFile(f"dist/DR-SR-Charts-{version}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
     for path in PATHS:
         zipf.write(path)

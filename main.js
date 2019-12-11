@@ -138,7 +138,7 @@ function Title(text) {
 
 function collectStats(stats, key) {
     return stats.flatMap(monthlyStats =>
-        monthlyStats[key].map((value, day) =>
+        (monthlyStats[key] || []).map((value, day) =>
             ({
                 x: new Date(parseInt(monthlyStats.year), parseInt(monthlyStats.month) - 1, day),
                 y: parseInt(value)

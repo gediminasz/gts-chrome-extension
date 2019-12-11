@@ -13,9 +13,11 @@ function inject() {
     const container = getContainer();
     const userId = getUserId();
 
-    if (!userId) return;
-
-    // TODO GZL fix charts visible in non profile pages like https://www.gran-turismo.com/gb/gtsport/user/relations
+    if (!userId) {
+        // Do not display anything when not in a profile page
+        m.render(container, "");
+        return;
+    }
 
     Promise.all([
         fetchStats(userId),

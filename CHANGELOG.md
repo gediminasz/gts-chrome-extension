@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+* Added time series charts to see how ratings change over real time. Linear option which excludes inactive days is still available.
+
 ## 0.2.1
 
 * Fixed most recent data not being displayed by adding 24 month limit.

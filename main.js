@@ -55,13 +55,12 @@ function fetchStatsHistory(userId) {
     body.append("job", 12);
     body.append("user_no", userId);
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    body.append("year_begin", year - 2);  // GTS API returns up to two years of data
-    body.append("month_begin", month);
-    body.append("year_end", year);
-    body.append("month_end", month);
+    const date = moment();
+    body.append("year_end", date.year());
+    body.append("month_end", date.month() + 1);
+    date.subtract(23, 'months');  // GTS API returns up to two years of data
+    body.append("year_begin", date.year());
+    body.append("month_begin", date.month() + 1);
 
     return fetch("https://www.gran-turismo.com/us/api/gt7sp/profile/", { method: "POST", body })
         .then(response => response.json())

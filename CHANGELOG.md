@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+* Fix current month's data not being shown.
+
 ## 0.3.0
 
 * Added time series charts to see how ratings change over real time. Linear option which excludes inactive days is still available.
